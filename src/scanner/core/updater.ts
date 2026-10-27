@@ -65,9 +65,9 @@ export function detectDeviceArchitecture(): 'arm64-v8a' | 'armeabi-v7a' | 'x86_6
 
 /**
  * Checks for updates using a 3-tier failover discovery system:
- * Tier 1: GitHub API (api.github.com/repos/XRTM8/Otium-Scan/releases/latest)
- * Tier 2: GitHub Web Releases Redirect (github.com/XRTM8/Otium-Scan/releases/latest) -> 0 rate limit
- * Tier 3: Raw Git package.json (raw.githubusercontent.com/XRTM8/Otium-Scan/main/package.json) -> 0 rate limit
+ * Tier 1: GitHub API (api.github.com/repos/XRTM8/Otium-Docs/releases/latest)
+ * Tier 2: GitHub Web Releases Redirect (github.com/XRTM8/Otium-Docs/releases/latest) -> 0 rate limit
+ * Tier 3: Raw Git package.json (raw.githubusercontent.com/XRTM8/Otium-Docs/main/package.json) -> 0 rate limit
  * 
  * Guarantees update detection even under strict GitHub API rate limits (HTTP 403) or country blocks.
  */
@@ -76,7 +76,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
   let tag: string | null = null;
   let releaseNotes = '';
   let publishedAt: string | undefined = undefined;
-  let releaseUrl = 'https://github.com/XRTM8/Otium-Scan/releases';
+  let releaseUrl = 'https://github.com/XRTM8/Otium-Docs/releases';
   let matchedAsset: ReleaseAsset | undefined = undefined;
   let allAssets: ReleaseAsset[] = [];
 
@@ -84,7 +84,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
   // TIER 1: Official GitHub Releases API (Native Android HTTP first, then Web fetch)
   // =========================================================================
   try {
-    const GITHUB_API_URL = 'https://api.github.com/repos/XRTM8/Otium-Scan/releases/latest';
+    const GITHUB_API_URL = 'https://api.github.com/repos/XRTM8/Otium-Docs/releases/latest';
     let apiData: any = null;
 
     const nativeResponse = await nativeFetchUrl(GITHUB_API_URL);
@@ -130,7 +130,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
   // =========================================================================
   if (!tag) {
     try {
-      const webRes = await fetch('https://github.com/XRTM8/Otium-Scan/releases/latest', {
+      const webRes = await fetch('https://github.com/XRTM8/Otium-Docs/releases/latest', {
         redirect: 'manual',
       }).catch(() => null);
 
@@ -139,7 +139,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
         const match = location?.match(/tag\/v?([0-9]+\.[0-9]+\.[0-9]+)/i);
         if (match && match[1]) {
           tag = match[1].trim();
-          releaseUrl = `https://github.com/XRTM8/Otium-Scan/releases/tag/v${tag}`;
+          releaseUrl = `https://github.com/XRTM8/Otium-Docs/releases/tag/v${tag}`;
         }
       }
     } catch (err) {
@@ -152,7 +152,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
   // =========================================================================
   if (!tag) {
     try {
-      const RAW_PKG_URL = 'https://raw.githubusercontent.com/XRTM8/Otium-Scan/main/package.json';
+      const RAW_PKG_URL = 'https://raw.githubusercontent.com/XRTM8/Otium-Docs/main/package.json';
       let pkgText: string | null = await nativeFetchUrl(RAW_PKG_URL);
       if (!pkgText || pkgText.startsWith('ERROR:')) {
         const rawRes = await fetch(RAW_PKG_URL).catch(() => null);
@@ -165,7 +165,7 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
         const pkg = JSON.parse(pkgText);
         if (pkg && pkg.version) {
           tag = pkg.version.replace(/^v/i, '').trim();
-          releaseUrl = `https://github.com/XRTM8/Otium-Scan/releases/tag/v${tag}`;
+          releaseUrl = `https://github.com/XRTM8/Otium-Docs/releases/tag/v${tag}`;
         }
       }
     } catch (err) {
@@ -183,9 +183,9 @@ export async function checkForAppUpdates(): Promise<UpdateCheckResult> {
   if (allAssets.length === 0 && tag) {
     const knownAbis: ('arm64-v8a' | 'armeabi-v7a' | 'x86_64')[] = ['arm64-v8a', 'armeabi-v7a', 'x86_64'];
     allAssets = knownAbis.map((abi) => ({
-      name: `OtiumScan_${tag}_${abi}.apk`,
+      name: `Otium_Docs_${tag}_${abi}.apk`,
       size: 7 * 1024 * 1024,
-      downloadUrl: `https://github.com/XRTM8/Otium-Scan/releases/download/v${tag}/OtiumScan_${tag}_${abi}.apk`,
+      downloadUrl: `https://github.com/XRTM8/Otium-Docs/releases/download/v${tag}/Otium_Docs_${tag}_${abi}.apk`,
     }));
   }
 

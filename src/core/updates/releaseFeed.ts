@@ -17,9 +17,13 @@ export interface ReleaseInfo {
   assets: ReleaseAssets;
 }
 
-export const OTIUM_RELEASES_URL = 'https://github.com/XRTM8/Otium/releases/latest';
+export const OTIUM_RELEASES_URL = 'https://github.com/XRTM8/Otium-Docs/releases/latest';
 export const OTIUM_RELEASE_FEED_URL =
-  'https://github.com/XRTM8/Otium/releases/latest/download/latest.json';
+  'https://github.com/XRTM8/Otium-Docs/releases/latest/download/latest.json';
+export const GITHUB_API_URL =
+  'https://api.github.com/repos/XRTM8/Otium-Docs/releases/latest';
+export const RAW_PKG_URL =
+  'https://raw.githubusercontent.com/XRTM8/Otium-Docs/main/package.json';
 
 function normalizeVersion(version: string): string {
   return version.trim().replace(/^v/i, '');
@@ -59,24 +63,16 @@ export function isNewerVersion(candidate: string, current: string): boolean {
 function parseAsset(value: unknown): ReleaseAsset | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const record = value as Record<string, unknown>;
-  if (typeof record.url !== 'string') return undefined;
+  if (typeof record.url !== 'string' || !record.url.trim()) return undefined;
 
-  let url: URL;
-  try {
-    url = new URL(record.url);
-  } catch {
-    return undefined;
+  const result: ReleaseAsset = { url: record.url.trim() };
+  if (typeof record.size === 'number' && Number.isFinite(record.size)) {
+    result.size = record.size;
   }
-  if (url.protocol !== 'https:') return undefined;
-
-  const asset: ReleaseAsset = { url: url.toString() };
-  if (typeof record.size === 'number' && Number.isFinite(record.size) && record.size > 0) {
-    asset.size = record.size;
+  if (typeof record.sha256 === 'string' && record.sha256.trim()) {
+    result.sha256 = record.sha256.trim();
   }
-  if (typeof record.sha256 === 'string' && /^[a-f0-9]{64}$/i.test(record.sha256)) {
-    asset.sha256 = record.sha256.toLowerCase();
-  }
-  return asset;
+  return result;
 }
 
 export function parseReleaseInfo(value: unknown): ReleaseInfo {
@@ -111,6 +107,12 @@ export function parseReleaseInfo(value: unknown): ReleaseInfo {
   };
 }
 
+/**
+ * 3-Tier Failover Update Checker for Otium Docs:
+ * Tier 1: latest.json / GitHub API (api.github.com/repos/XRTM8/Otium-Docs/releases/latest)
+ * Tier 2: GitHub Web Releases Redirect (github.com/XRTM8/Otium-Docs/releases/latest) -> 0 rate limit
+ * Tier 3: Raw Git package.json (raw.githubusercontent.com/XRTM8/Otium-Docs/main/package.json) -> 0 rate limit
+ */
 export async function fetchReleaseInfo(
   url: string = OTIUM_RELEASE_FEED_URL,
   signal?: AbortSignal
@@ -121,15 +123,97 @@ export async function fetchReleaseInfo(
   signal?.addEventListener('abort', abort, { once: true });
 
   try {
-    const response = await fetch(url, {
+    // Attempt 1: Precompiled latest.json feed
+    try {
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' },
+        signal: controller.signal
+      });
+      if (response.ok) {
+        return parseReleaseInfo(await response.json());
+      }
+    } catch (e) {
+      console.warn('latest.json fetch failed, falling back to 3-tier discovery:', e);
+    }
+
+    // TIER 1: GitHub API Releases Endpoint
+    try {
+      const apiRes = await fetch(GITHUB_API_URL, {
+        cache: 'no-store',
+        headers: { Accept: 'application/vnd.github.v3+json' },
+        signal: controller.signal
+      });
+      if (apiRes.ok) {
+        const data = await apiRes.json();
+        const tag = (data.tag_name || data.name || '').replace(/^v/i, '').trim();
+        if (tag) {
+          const assets: ReleaseAssets = {};
+          if (Array.isArray(data.assets)) {
+            for (const asset of data.assets) {
+              const name: string = asset.name || '';
+              const downloadUrl: string = asset.browser_download_url || '';
+              if (name.endsWith('.exe')) assets.windowsInstaller = { url: downloadUrl, size: asset.size };
+              else if (name.endsWith('.zip')) assets.windowsPortable = { url: downloadUrl, size: asset.size };
+              else if (name.endsWith('.apk')) assets.androidApk = { url: downloadUrl, size: asset.size };
+            }
+          }
+          return {
+            version: tag,
+            notes: typeof data.body === 'string' ? data.body : '',
+            pubDate: data.published_at || '',
+            assets
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Tier 1 GitHub API failed, proceeding to Tier 2:', e);
+    }
+
+    // TIER 2: GitHub Web Releases Redirect (0 rate limit)
+    try {
+      const webRes = await fetch(OTIUM_RELEASES_URL, {
+        redirect: 'manual',
+        signal: controller.signal
+      });
+      const location = webRes.headers.get('location') || webRes.url;
+      const match = location?.match(/tag\/v?([0-9]+\.[0-9]+\.[0-9]+)/i);
+      if (match && match[1]) {
+        return {
+          version: match[1].trim(),
+          notes: 'New version available on GitHub Releases.',
+          pubDate: '',
+          assets: {
+            windowsInstaller: { url: OTIUM_RELEASES_URL },
+            androidApk: { url: OTIUM_RELEASES_URL }
+          }
+        };
+      }
+    } catch (e) {
+      console.warn('Tier 2 Web redirect failed, proceeding to Tier 3:', e);
+    }
+
+    // TIER 3: Raw Git package.json (0 rate limit)
+    const rawRes = await fetch(RAW_PKG_URL, {
       cache: 'no-store',
-      headers: { Accept: 'application/json' },
       signal: controller.signal
     });
-    if (!response.ok) {
-      throw new Error(`Release feed returned ${response.status}`);
+    if (rawRes.ok) {
+      const pkg = await rawRes.json();
+      if (typeof pkg.version === 'string' && pkg.version.trim()) {
+        return {
+          version: normalizeVersion(pkg.version),
+          notes: 'New version available.',
+          pubDate: '',
+          assets: {
+            windowsInstaller: { url: OTIUM_RELEASES_URL },
+            androidApk: { url: OTIUM_RELEASES_URL }
+          }
+        };
+      }
     }
-    return parseReleaseInfo(await response.json());
+
+    throw new Error('All update discovery tiers exhausted.');
   } finally {
     window.clearTimeout(timeout);
     signal?.removeEventListener('abort', abort);

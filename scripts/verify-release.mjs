@@ -14,7 +14,7 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const FEED_URL = 'https://github.com/XRTM8/Otium/releases/latest/download/latest.json';
+const FEED_URL = 'https://github.com/XRTM8/Otium-Docs/releases/latest/download/latest.json';
 const packageJson = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'));
 const expectedVersion = packageJson.version;
 

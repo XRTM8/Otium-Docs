@@ -95,12 +95,16 @@ jobs:
             throw 'No updater signature was produced. Check TAURI_SIGNING_PRIVATE_KEY.'
           }
 
-          $portable = 'src-tauri/target/release/otium.exe'
-          if (-not (Test-Path $portable)) { throw 'No portable EXE was produced.' }
+          $portable = 'src-tauri/target/release/otium_docs.exe'
+          if (-not (Test-Path $portable)) {
+            $candidate = Get-ChildItem src-tauri/target/release/*.exe | Where-Object { $_.Name -notlike '*-setup*' -and $_.Name -notlike '*.build*' } | Select-Object -First 1
+            if ($candidate) { $portable = $candidate.FullName }
+            else { throw 'No portable EXE was produced.' }
+          }
 
-          Copy-Item $setup.FullName "release/Otium_${env:VERSION}_x64-setup.exe"
-          Copy-Item $signature "release/Otium_${env:VERSION}_x64-setup.exe.sig"
-          Copy-Item $portable "release/Otium_${env:VERSION}_x64-portable.exe"
+          Copy-Item $setup.FullName "release/Otium_Docs_${env:VERSION}_x64-setup.exe"
+          Copy-Item $signature "release/Otium_Docs_${env:VERSION}_x64-setup.exe.sig"
+          Copy-Item $portable "release/Otium_Docs_${env:VERSION}_x64-portable.exe"
 
       - uses: actions/upload-artifact@v4
         with:
@@ -210,7 +214,7 @@ jobs:
                 esac
                 ;;
             esac
-            cp "$apk" "release/Otium_${VERSION}_${abi}.apk"
+            cp "$apk" "release/Otium_Docs_${VERSION}_${abi}.apk"
             found=$((found + 1))
           done < <(find src-tauri/gen/android/app/build/outputs/apk -path '*/release/*.apk' -print)
           if [ "$found" -eq 0 ]; then
@@ -251,17 +255,17 @@ jobs:
           node scripts/generate-latest-json.mjs \
             --version "$VERSION" \
             --tag "$TAG" \
-            --installer "upload/Otium_${VERSION}_x64-setup.exe" \
-            --signature "upload/Otium_${VERSION}_x64-setup.exe.sig" \
-            --portable "upload/Otium_${VERSION}_x64-portable.exe" \
-            --apk "upload/Otium_${VERSION}_universal.apk" \
+            --installer "upload/Otium_Docs_${VERSION}_x64-setup.exe" \
+            --signature "upload/Otium_Docs_${VERSION}_x64-setup.exe.sig" \
+            --portable "upload/Otium_Docs_${VERSION}_x64-portable.exe" \
+            --apk "upload/Otium_Docs_${VERSION}_universal.apk" \
             --output-dir upload
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.verify.outputs.tag }}
-          name: Otium ${{ needs.verify.outputs.version }}
+          name: Otium Docs ${{ needs.verify.outputs.version }}
           body_path: release-notes.md
           files: upload/*
           fail_on_unmatched_files: true

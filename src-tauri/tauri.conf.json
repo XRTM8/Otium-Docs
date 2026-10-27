@@ -72,10 +72,30 @@
     },
     "android": {
       "minSdkVersion": 24
-    }
+    },
+    "createUpdaterArtifacts": true,
+    "fileAssociations": [
+      {
+        "ext": [
+          "pdf"
+        ],
+        "name": "PDF Document",
+        "description": "Portable Document Format",
+        "role": "Viewer"
+      }
+    ]
   },
   "plugins": {
     "opener": {},
-    "process": {}
+    "process": {},
+    "updater": {
+      "endpoints": [
+        "https://github.com/XRTM8/Otium-Docs/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkwQzk1QTM1OUU3NTk2REQKUldUZGxuV2VOVnJKa0MxSHJJZmJLY1ZyVC9aaE9ha3UxaWVpVSt3R2dTU3g4S2taWVJFVnQvdUYK",
+      "windows": {
+        "installMode": "passive"
+      }
+    }
   }
 }

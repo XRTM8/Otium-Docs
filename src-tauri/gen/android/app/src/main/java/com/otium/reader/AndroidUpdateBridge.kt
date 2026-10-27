@@ -224,6 +224,6 @@ class AndroidUpdateBridge(
 
   companion object {
     private const val FEED_URL =
-      "https://github.com/XRTM8/Otium/releases/latest/download/latest.json"
+      "https://github.com/XRTM8/Otium-Docs/releases/latest/download/latest.json"
   }
 }

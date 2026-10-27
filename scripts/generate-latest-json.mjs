@@ -103,7 +103,7 @@ function newest(directory, predicate) {
 
 function discoverInstaller(version) {
   const bundleDir = path.join(root, 'src-tauri', 'target', 'release', 'bundle', 'nsis');
-  const preferred = path.join(bundleDir, `Otium_${version}_x64-setup.exe`);
+  const preferred = path.join(bundleDir, `Otium_Docs_${version}_x64-setup.exe`);
   if (existsSync(preferred)) return preferred;
   const fallback = newest(bundleDir, (name) => /-setup\.exe$/i.test(name));
   if (fallback) return fallback;
@@ -115,7 +115,7 @@ function discoverInstaller(version) {
 
 function discoverPortable() {
   const releaseDir = path.join(root, 'src-tauri', 'target', 'release');
-  for (const name of ['otium.exe', 'Otium.exe']) {
+  for (const name of ['otium_docs.exe', 'Otium Docs.exe', 'otium.exe', 'Otium.exe']) {
     const candidate = path.join(releaseDir, name);
     if (existsSync(candidate)) return candidate;
   }
@@ -186,7 +186,7 @@ if (normalizeTag(tag) !== version) {
 const repository =
   stringOption(options, 'repo', '') ||
   process.env.GITHUB_REPOSITORY ||
-  'XRTM8/Otium';
+  'XRTM8/Otium-Docs';
 if (!/^[^/\s]+\/[^/\s]+$/.test(repository)) {
   fail(`invalid repository "${repository}" (expected owner/name)`);
 }
@@ -229,9 +229,9 @@ if (!signatureText) fail('the Windows installer signature is empty');
 const outputDir = absolute(stringOption(options, 'output-dir', 'release'));
 mkdirSync(outputDir, { recursive: true });
 
-const installerName = `Otium_${version}_x64-setup.exe`;
-const portableName = `Otium_${version}_x64-portable.exe`;
-const apkName = `Otium_${version}_universal.apk`;
+const installerName = `Otium_Docs_${version}_x64-setup.exe`;
+const portableName = `Otium_Docs_${version}_x64-portable.exe`;
+const apkName = `Otium_Docs_${version}_universal.apk`;
 
 function stage(source, name) {
   const destination = path.join(outputDir, name);
@@ -290,7 +290,7 @@ function humanSize(bytes) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MiB`;
 }
 
-console.log(`Otium ${version} release feed`);
+console.log(`Otium Docs ${version} release feed`);
 console.log(`  tag:      ${tag}`);
 console.log(`  notes:    ${path.relative(root, notesPath)}`);
 console.log(`  feed:     ${path.relative(root, feedPath)}`);
