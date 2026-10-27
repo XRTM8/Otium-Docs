@@ -1,0 +1,35 @@
+[package]
+name = "otium_docs"
+version = "1.0.0"
+description = "Otium Docs — High-Performance Local-First Document Reader & Intelligent Scanner"
+authors = ["XRTM8"]
+edition = "2024"
+rust-version = "1.90"
+
+[lib]
+name = "otium_docs_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.7.4", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+log = "0.4"
+tauri = { version = "2.12.5", features = ["devtools"] }
+tauri-plugin-log = "2"
+tauri-plugin-opener = "2"
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-updater = "2"
+tauri-plugin-process = "2"
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.55"
+
+[profile.release]
+strip = "symbols"
+lto = "thin"
+codegen-units = 1
+opt-level = "s"

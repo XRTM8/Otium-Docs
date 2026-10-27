@@ -1,0 +1,81 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Otium Docs",
+  "version": "1.0.0",
+  "identifier": "com.otium.docs",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "Otium Docs",
+        "url": "index.html",
+        "width": 1200,
+        "height": 820,
+        "minWidth": 420,
+        "minHeight": 550,
+        "center": true,
+        "resizable": true,
+        "fullscreen": false,
+        "visible": false
+      }
+    ],
+    "security": {
+      "csp": {
+        "default-src": "'self' https://tauri.localhost",
+        "connect-src": "'self' ipc: http://ipc.localhost https://ipc.localhost https://tauri.localhost https://api.github.com https://github.com https://objects.githubusercontent.com https://raw.githubusercontent.com https://release-assets.githubusercontent.com",
+        "font-src": "'self' data: https://tauri.localhost",
+        "img-src": "'self' data: blob: https://tauri.localhost https://github.com https://avatars.githubusercontent.com",
+        "media-src": "'self' blob: data: mediastream: https://tauri.localhost",
+        "style-src": "'self' 'unsafe-inline'",
+        "script-src": "'self' 'wasm-unsafe-eval'",
+        "worker-src": "'self' blob:",
+        "child-src": "'self' blob:",
+        "object-src": "'none'",
+        "base-uri": "'self'",
+        "form-action": "'none'",
+        "frame-ancestors": "'none'"
+      },
+      "devCsp": {
+        "default-src": "'self' https://tauri.localhost",
+        "connect-src": "'self' ipc: http://ipc.localhost https://github.com https://*.githubusercontent.com http://localhost:5173 ws://localhost:5173",
+        "font-src": "'self' data: https://tauri.localhost",
+        "img-src": "'self' data: blob: https://tauri.localhost",
+        "media-src": "'self' blob: data: mediastream: https://tauri.localhost",
+        "style-src": "'self' 'unsafe-inline'",
+        "script-src": "'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'",
+        "worker-src": "'self' blob:",
+        "child-src": "'self' blob:"
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "resources": [],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    },
+    "android": {
+      "minSdkVersion": 24
+    }
+  },
+  "plugins": {
+    "opener": {},
+    "process": {}
+  }
+}

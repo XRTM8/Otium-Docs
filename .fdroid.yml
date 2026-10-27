@@ -1,0 +1,32 @@
+# F-Droid Build Recipe for Otium Docs
+# Package: com.otium.docs
+# License: GNU General Public License v3.0 (GPL-3.0)
+
+AntiFeatures: []
+
+Categories:
+  - Reading
+  - Office
+  - Graphics
+
+License: GPL-3.0-only
+SourceCode: https://github.com/XRTM8/Otium-Docs
+IssueTracker: https://github.com/XRTM8/Otium-Docs/issues
+Changelog: https://github.com/XRTM8/Otium-Docs/releases
+
+Summary: High-performance local-first document reader and intelligent camera scanner
+Description: |
+  Otium Docs is a unified, high-performance document suite for Android,
+  combining a fast PDF reading engine with an on-device intelligent camera scanner.
+  Zero telemetry, 100% offline, free software licensed under GNU GPL v3.0.
+
+RepoType: git
+Repo: https://github.com/XRTM8/Otium-Docs.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 1000000
+    commit: v1.0.0
+    subdir: src-tauri
+    gradle:
+      - assembleRelease

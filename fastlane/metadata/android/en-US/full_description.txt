@@ -1,0 +1,8 @@
+Otium Docs is a unified, high-performance document suite for Android, combining a lightning-fast PDF reading engine with an on-device intelligent camera scanner.
+
+Key Features:
+- Fast PDF Reader: 0.02s cold-start responsiveness, handles large technical documents, textbooks, and reports without battery drain.
+- Integrated Smart Scanner: Capture physical documents, contracts, and notes with automatic edge detection, perspective correction, and contrast enhancement.
+- Instant Review & Annotations: Scanned documents are compiled into clean PDFs that immediately open in the reader for highlighting, text search, and bookmarking.
+- Unified Document Vault: Manage your reading history and scanned documents in a single local library.
+- 100% Offline & Private: No telemetry, no third-party servers, free software licensed under GNU General Public License v3.0.
