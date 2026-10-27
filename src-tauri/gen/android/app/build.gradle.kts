@@ -44,13 +44,13 @@ if (releaseBuildRequested && !releaseSigningReady) {
 }
 
 android {
-    compileSdk = 36
-    namespace = "com.otium.reader"
+    compileSdk = 37
+    namespace = "com.otium.docs"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
-        applicationId = "com.otium.reader"
+        applicationId = "com.otium.docs"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
@@ -71,7 +71,6 @@ android {
 
     buildTypes {
         getByName("debug") {
-            applicationIdSuffix = ".debug"
             manifestPlaceholders["usesCleartextTraffic"] = "true"
             isDebuggable = true
             isJniDebuggable = true
@@ -84,16 +83,9 @@ android {
             }
         }
         getByName("release") {
-            // Never fall back to debug signing for a distributable APK.
             signingConfig = signingConfigs.getByName("release")
-            // Keep R8 off for this hotfix. Tauri bridges into Kotlin/WebView
-            // through JNI and JavascriptInterface reflection; a startup crash
-            // here cannot be caught without a physical device. The real size
-            // win comes from --split-per-abi (62 MB universal -> ~12 MB per
-            // phone ABI), so shrinking can wait for device verification.
             isMinifyEnabled = false
             isShrinkResources = false
-
             proguardFiles(
                 *fileTree(".") {
                   include("**/*.pro")

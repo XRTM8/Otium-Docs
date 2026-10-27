@@ -1,5 +1,11 @@
-package com.otium.reader
+package com.otium.docs
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.webkit.PermissionRequest
+import android.webkit.WebChromeClient
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -21,6 +27,7 @@ import java.io.File
 import java.nio.charset.StandardCharsets
 
 class MainActivity : TauriActivity() {
+  private var pendingPermissionRequest: PermissionRequest? = null
   private var appWebView: WebView? = null
   private var ttsBridge: AndroidTtsBridge? = null
   private var immersive = false
@@ -79,10 +86,35 @@ class MainActivity : TauriActivity() {
     })
 
     handlePdfIntent(intent)
+    ensureCameraPermissions()
   }
 
   override fun onWebViewCreate(webView: WebView) {
     appWebView = webView
+    webView.settings.apply {
+      domStorageEnabled = true
+      databaseEnabled = true
+      allowFileAccess = true
+      mediaPlaybackRequiresUserGesture = false
+    }
+
+    webView.webChromeClient = object : WebChromeClient() {
+      override fun onPermissionRequest(request: PermissionRequest) {
+        runOnUiThread {
+          if (ContextCompat.checkSelfPermission(this@MainActivity, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            request.grant(request.resources)
+          } else {
+            pendingPermissionRequest = request
+            ActivityCompat.requestPermissions(
+              this@MainActivity,
+              arrayOf(Manifest.permission.CAMERA),
+              CAMERA_PERMISSION_REQUEST_CODE
+            )
+          }
+        }
+      }
+    }
+
     webView.addJavascriptInterface(AndroidUpdateBridge(this, webView), "OtiumAndroid")
     webView.addJavascriptInterface(ThemeBridge(), "OtiumTheme")
     webView.addJavascriptInterface(UiBridge(), "OtiumUi")
@@ -466,7 +498,41 @@ class MainActivity : TauriActivity() {
     mainHandler.postDelayed({ attemptPdfDelivery(generation, attempt + 1) }, DELIVERY_RETRY_MS)
   }
 
+
+  private fun ensureCameraPermissions() {
+    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+      ActivityCompat.requestPermissions(
+        this,
+        arrayOf(Manifest.permission.CAMERA),
+        CAMERA_PERMISSION_REQUEST_CODE
+      )
+    }
+  }
+
+  override fun onRequestPermissionsResult(
+    requestCode: Int,
+    permissions: Array<out String>,
+    grantResults: IntArray
+  ) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+    if (requestCode == CAMERA_PERMISSION_REQUEST_CODE) {
+      if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        pendingPermissionRequest?.let {
+          it.grant(it.resources)
+          pendingPermissionRequest = null
+        }
+      } else {
+        pendingPermissionRequest?.let {
+          it.deny()
+          pendingPermissionRequest = null
+        }
+      }
+    }
+  }
+
   companion object {
+    private const val CAMERA_PERMISSION_REQUEST_CODE = 1001
+
     private const val DELIVERY_RETRY_MS = 200L
     private const val MAX_DELIVERY_ATTEMPTS = 150
     private const val REQUEST_SAVE_TEXT = 0x0751

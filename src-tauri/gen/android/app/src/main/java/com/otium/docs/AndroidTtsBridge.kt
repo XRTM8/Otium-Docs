@@ -1,4 +1,4 @@
-package com.otium.reader
+package com.otium.docs
 
 import android.app.Activity
 import android.content.Intent

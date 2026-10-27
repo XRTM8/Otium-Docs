@@ -92,7 +92,7 @@
       "endpoints": [
         "https://github.com/XRTM8/Otium-Docs/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDkwQzk1QTM1OUU3NTk2REQKUldUZGxuV2VOVnJKa0MxSHJJZmJLY1ZyVC9aaE9ha3UxaWVpVSt3R2dTU3g4S2taWVJFVnQvdUYK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDUzQTlGREExQTdGQ0UwQTUKUldTbDRQeW5vZjJwVTFZK21jN3dXcWVIV0c0enBOV1pvOEhtVUg0Ly9Fa2MvZUZPYjlFUjJVbmQK",
       "windows": {
         "installMode": "passive"
       }
