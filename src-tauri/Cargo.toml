@@ -1,6 +1,6 @@
 [package]
 name = "otium_docs"
-version = "1.0.0"
+version = "1.1.0"
 description = "Otium Docs — High-Performance Local-First Document Reader & Intelligent Scanner"
 authors = ["XRTM8"]
 edition = "2024"

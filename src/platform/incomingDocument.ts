@@ -1,4 +1,5 @@
 import { getPlatformId, isTauriRuntime } from './runtime';
+import { invoke } from '@tauri-apps/api/core';
 
 export interface IncomingDocument {
   data: ArrayBuffer;
@@ -54,7 +55,6 @@ export function registerIncomingDocumentHandler(handler: IncomingDocumentHandler
 
     void (async () => {
       try {
-        const { invoke } = await import('@tauri-apps/api/core');
         const initial = await invoke<{ name: string; path: string } | null>('get_initial_pdf');
         if (!initial?.path || cancelled) return;
 
