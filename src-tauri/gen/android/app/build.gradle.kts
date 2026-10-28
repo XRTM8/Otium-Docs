@@ -44,13 +44,13 @@ if (releaseBuildRequested && !releaseSigningReady) {
 }
 
 android {
-    compileSdk = 37
+    compileSdk = 35
     namespace = "com.otium.docs"
     defaultConfig {
         manifestPlaceholders["usesCleartextTraffic"] = "false"
         applicationId = "com.otium.docs"
         minSdk = 24
-        targetSdk = 37
+        targetSdk = 35
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
         versionName = tauriProperties.getProperty("tauri.android.versionName", "1.0")
     }
